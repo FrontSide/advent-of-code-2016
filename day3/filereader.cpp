@@ -85,6 +85,9 @@ std::string* getElementsFromLine(std::string line, std::string delimiter, int* n
 
   }
 
+  //Write last element into array
+  elements[elementIdx] = line;
+
   return elements;
 
 }

@@ -13,5 +13,5 @@ class Triangle {
     Triangle(double sideALength, double sideBLength, double sideCLength);
 
     void setTriangleFromSideLengths(double sideALength, double sideBLength, double sideCLength);
-    bool isLegalTriangle();
+    bool isLegal();
 };

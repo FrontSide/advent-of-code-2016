@@ -18,7 +18,7 @@ void Triangle::setTriangleFromSideLengths(double m_sideALength, double m_sideBLe
   m_sideC = sideC;
 }
 
-bool Triangle::isLegalTriangle() {
+bool Triangle::isLegal() {
 
   if (m_sideA.length + m_sideB.length <=  m_sideC.length)
     return false;
