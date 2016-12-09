@@ -15,5 +15,6 @@ class Room {
 
         bool isReal();
         int getId();
+        std::string getdecryptedName();
 
 };

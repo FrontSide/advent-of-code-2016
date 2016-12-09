@@ -17,6 +17,7 @@ int main() {
       Room* r = new Room(linesOfFile[i]);
       if (r->isReal()) {
           idsum += r->getId();
+          std::cout << r->getdecryptedName() << " | " << r->getId() << std::endl;
       }
   }
 

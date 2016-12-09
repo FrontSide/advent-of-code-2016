@@ -120,3 +120,30 @@ std::string Room::computeChecksumFromEncName() {
     return checksum.substr(0, 5);
 
 }
+
+std::string Room::getdecryptedName() {
+    // Decrypts the encrypted room name
+    // Room names can be decrypted as follows:
+    //   To decrypt a room name,
+    //   rotate each letter forward through the alphabet a number of times
+    //   equal to the room's sector ID.
+    //   A becomes B, B becomes C, Z becomes A, and so on.
+    //   Dashes become spaces.
+    // e.g. enc: qzmt-zixmtkozy-ivhz-343
+    //      dec: very encrypted name
+
+    const std::string alphabeth = "abcdefghijklmnopqrstuvwxyz";
+    const char CHAR_TO_WHITESPACE = '-';
+
+    std::string decName;
+    for (int i = 0; i < m_encName.length(); i++) {
+        if (m_encName[i] == CHAR_TO_WHITESPACE) {
+            decName += " ";
+            continue;
+        }
+        decName += alphabeth[(alphabeth.find(m_encName[i]) + getId()) % alphabeth.length()];
+    }
+
+    return decName;
+
+}
