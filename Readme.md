@@ -1,5 +1,12 @@
 ## Advent of Code
 
+## SPOILER ALERT
+
+I added the instructions INCLUDING THE SOLUTIONS (i.e. the output
+of my code) to the Readme files of each day.
+
+## What's this all about
+
 This repository contains code snippets that solve the
 code puzzles from http://adventofcode.com/2016, 
 whereas I decided to use a different programming language
