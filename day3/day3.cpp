@@ -5,24 +5,33 @@
 
 int main() {
 
+  const int COLUMNS_TO_READ = 3;
+  const int SIDES_ON_TRIANGLE = 3;
+
   std::string* linesOfFile;
   int numOfLines;
   linesOfFile = getLinesFromFile("input.txt", &numOfLines);
   int possibleTrianglesCount = 0;
 
-  for(int i = 0; i < numOfLines; i++) {
-    int numOfElements;
-    std::string* triangleSideLengths = getElementsFromLine(linesOfFile[i], " ", &numOfElements);
+  for (int columnIdx = 0; columnIdx < COLUMNS_TO_READ; columnIdx++) {
 
-    if (numOfElements != 3) {
-      std::cout << "Error. Triangle must have 3 sides. Line has " << numOfElements << std::endl;
-      std::cout << "Line is :: " << linesOfFile[i] << std::endl;
-      return 1;
-    }
+      double triangleSideLengths[SIDES_ON_TRIANGLE];
 
-    if ((new Triangle(std::stod(triangleSideLengths[0]), std::stod(triangleSideLengths[1]), std::stod(triangleSideLengths[2])))->isLegal()) {
-            possibleTrianglesCount++;
-    }
+      for(int i = 0; i < numOfLines; i++) {
+
+          int numOfElements;
+          std::string* elementsInLine = getElementsFromLine(linesOfFile[i], " ", &numOfElements);
+
+          triangleSideLengths[i % SIDES_ON_TRIANGLE] = std::stod(elementsInLine[columnIdx]);
+
+          if (i % SIDES_ON_TRIANGLE == 2) {
+
+              if ((new Triangle(triangleSideLengths[0], triangleSideLengths[1], triangleSideLengths[2]))->isLegal()) {
+                      possibleTrianglesCount++;
+              }
+          }
+
+      }
 
   }
 
