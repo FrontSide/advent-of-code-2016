@@ -4,7 +4,7 @@ import "fmt"
 import "crypto/md5"
 import "io"
 import "strings"
-import "sort"
+import "strconv"
 
 type HashSum struct {
     hash string
@@ -12,41 +12,40 @@ type HashSum struct {
 }
 
 type PasswordCharacter struct {
+    exists bool
     character string
     iterationIndex int
 }
 type PasswordCharacters []PasswordCharacter
 
-// Implement sort interface
-func (slice PasswordCharacters) Len() int {
-    return len(slice)
-}
-
-func (slice PasswordCharacters) Less(i, j int) bool {
-    return slice[i].iterationIndex < slice[j].iterationIndex;
-}
-
-func (slice PasswordCharacters) Swap(i, j int) {
-    slice[i], slice[j] = slice[j], slice[i]
+func (slice PasswordCharacters) isFullyPopulated() bool {
+    for _, passwordCharacter := range slice {
+        if ! passwordCharacter.exists {
+            return false
+        }
+    }
+    return true
 }
 
 func main() {
 
     input := "uqwqemis"
-    passwordCharacters := PasswordCharacters{}
 
-    ITERATIONS_PER_THREAD := 100000
-    hashSumChannel := make(chan HashSum, 100000000)
+    PASSWORD_LENGTH := 8
+    passwordCharacters := make(PasswordCharacters, PASSWORD_LENGTH)
+
+    ITERATIONS_PER_THREAD := 10000
+    NUM_OF_THREADS := 1000
+    hashSumChannel := make(chan HashSum, ITERATIONS_PER_THREAD*NUM_OF_THREADS)
 
     startIdx := 0
-    for len(passwordCharacters) < 8 {
-        startIdx = triggerIteration(hashSumChannel, input, startIdx, ITERATIONS_PER_THREAD, 10)
-        findPassword(hashSumChannel, &passwordCharacters, 10*ITERATIONS_PER_THREAD)
+    for ! passwordCharacters.isFullyPopulated() {
+        startIdx = triggerIteration(hashSumChannel, input, startIdx, ITERATIONS_PER_THREAD, NUM_OF_THREADS)
+        findPassword(hashSumChannel, &passwordCharacters, NUM_OF_THREADS*ITERATIONS_PER_THREAD)
     }
 
-    sort.Sort(passwordCharacters)
-    for _, passwordCharacter := range passwordCharacters[:8] {
-        fmt.Printf(passwordCharacter.character)
+    for _, passwordCharacter := range passwordCharacters {
+        fmt.Printf("%s", passwordCharacter.character)
     }
 
 }
@@ -76,11 +75,33 @@ func findPassword(hashSumChannel chan HashSum, passwordCharacters *PasswordChara
 
     for idx := 0; idx < numToRead; idx++ {
         hashsum := <- hashSumChannel
+
         if !strings.HasPrefix(hashsum.hash, "00000") {
             continue
         }
 
-        *passwordCharacters = append(*passwordCharacters, PasswordCharacter{character: string(hashsum.hash[5]), iterationIndex: hashsum.iterationIdx})
+        if !strings.ContainsRune("01234567", rune(hashsum.hash[5])) {
+            continue
+        }
+
+        positionIdx, err := strconv.Atoi(string(hashsum.hash[5]))
+        if err != nil {
+            fmt.Printf("Error when parsing position.")
+            return
+        }
+
+        // If this position of the password is already filled and the
+        // iteration index of the newly found character for this
+        // position is bigger than the position index of the existing one,
+        // we can ignore the new one.
+        // This check is necessay because a newly found character for the same
+        // position might actually have a lower iteration index
+        // because of the randomness of concurrency.
+        if (*passwordCharacters)[positionIdx].exists && (*passwordCharacters)[positionIdx].iterationIndex < hashsum.iterationIdx {
+            continue
+        }
+
+        (*passwordCharacters)[positionIdx] = PasswordCharacter{exists: true, character: string(hashsum.hash[6]), iterationIndex: hashsum.iterationIdx}
 
         // We must not break off this iteration even if we have reached the
         // desired numbers of characters in the password
