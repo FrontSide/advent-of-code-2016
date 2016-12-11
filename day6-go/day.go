@@ -26,7 +26,7 @@ func main() {
     waitGroup.Add(lineLength)
 
     for columnIdx := 0; columnIdx < lineLength; columnIdx++ {
-        go getMostFrequentLetter(getColumnAsString(lines, columnIdx), columnIdx, &errorCorrectedMessage, &waitGroup)
+        go getLeastFrequentLetter(getColumnAsString(lines, columnIdx), columnIdx, &errorCorrectedMessage, &waitGroup)
     }
 
     // Wait untill all go routines are finished before printing the message
@@ -38,14 +38,14 @@ func main() {
 
 }
 
-func getMostFrequentLetter(column string, columnIdx int, errorCorrectedMessage *MostFrequentLetters, waitGroup *sync.WaitGroup) {
+func getLeastFrequentLetter(column string, columnIdx int, errorCorrectedMessage *MostFrequentLetters, waitGroup *sync.WaitGroup) {
 
     // Tell the wait group that one go routine has finished at the
     // end of this function
     defer (*waitGroup).Done()
 
-    maxOccurrencesCount := 0
-    var maxOccurrencesChar rune
+    minOccurrencesCount := -1
+    var minOccurrencesChar rune
     observedCharacters := ""
 
     for _, char := range column {
@@ -57,14 +57,14 @@ func getMostFrequentLetter(column string, columnIdx int, errorCorrectedMessage *
         observedCharacters += string(char)
         occurrencesCount := strings.Count(column, string(char))
 
-        if occurrencesCount > maxOccurrencesCount {
-            maxOccurrencesCount = occurrencesCount
-            maxOccurrencesChar = char
+        if minOccurrencesCount == -1 || occurrencesCount < minOccurrencesCount {
+            minOccurrencesCount = occurrencesCount
+            minOccurrencesChar = char
         }
 
     }
 
-    (*errorCorrectedMessage)[columnIdx] = maxOccurrencesChar
+    (*errorCorrectedMessage)[columnIdx] = minOccurrencesChar
 
 }
 
